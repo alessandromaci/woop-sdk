@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Woop Widget Test</title>
+  </head>
+  <body>
+    <div id="woop-widget"></div>
+    <script type="module">
+      import { createWoopWidget } from "./dist/index.js";
+
+      createWoopWidget(document.getElementById("woop-widget"), {
+        appCode: "TEST-WALLET",
+        mode: "request",
+        token: "USDC",
+        amount: "5",
+        recipient: "0xabc...",
+      });
+    </script>
+  </body>
+</html>
