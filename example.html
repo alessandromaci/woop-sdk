@@ -11,10 +11,30 @@
 
       createWoopWidget(document.getElementById("woop-widget"), {
         appCode: "TEST-WALLET",
-        mode: "request",
-        token: "USDC",
-        amount: "5",
-        recipient: "0xabc...",
+        assets: ["USDC", "ETH", "WBTC"],
+
+        // Modules flags
+        modules: {
+          enableReceive: true,
+          enableInvest: true,
+          enableNFTs: true,
+        },
+
+        // Network configuration
+        provider: window.ethereum,
+        networks: {
+          mainnet: true,
+          sepolia: false,
+          polygon: false,
+          optimism: true,
+          arbitrum: true,
+          base: true,
+        },
+
+        // Theme configuration
+        theme: "light",
+        buttonColor: "#4B6BFB",
+        logo: "https://your-logo-url.com/logo.png",
       });
     </script>
   </body>
