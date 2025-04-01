@@ -3,25 +3,56 @@
   <head>
     <meta charset="UTF-8" />
     <title>Woop Widget Test</title>
+    <style>
+      body {
+        background: #f9fafb; /* Light gray background */
+        margin: 0;
+        padding: 20px;
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+
+      #woop-widget {
+        width: 100%;
+        max-width: 600px;
+        margin: 20px auto;
+        background: white;
+        padding: 0; /* Remove padding as iframe has its own */
+      }
+
+      /* Optional: Add a container wrapper for additional styling */
+      .widget-wrapper {
+        max-width: 640px; /* Slightly larger to account for padding */
+        margin: 0 auto;
+        padding: 20px;
+      }
+    </style>
   </head>
   <body>
-    <div id="woop-widget"></div>
+    <div class="widget-wrapper">
+      <div id="woop-widget"></div>
+    </div>
     <script type="module">
       import { createWoopWidget } from "./dist/createWoopWidget.js";
 
+      // Example: How a wallet (like MetaMask) would integrate the widget
       createWoopWidget(document.getElementById("woop-widget"), {
+        // Required: App identification
         appCode: "TEST-WALLET",
-        assets: ["USDC", "ETH", "WBTC"],
-        provider: window.ethereum,
 
-        // Modules configuration
+        // Required: Pass the wallet's provider
+        provider: window.ethereum, // In MetaMask this would be their injected provider
+
+        // Required: Supported assets
+        assets: ["USDC", "ETH", "WBTC"],
+
+        // Optional: Enable/disable specific modules
         modules: {
           enableReceive: true,
           enableInvest: true,
           enableNFTs: true,
         },
 
-        // Network configuration
+        // Optional: Supported networks
         networks: {
           mainnet: true,
           sepolia: false,
@@ -31,7 +62,7 @@
           base: true,
         },
 
-        // Theme configuration
+        // Optional: UI customization
         theme: "light",
         buttonColor: "#4B6BFB",
         logo: "https://your-logo-url.com/logo.png",
