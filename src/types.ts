@@ -2,6 +2,7 @@ export interface WoopWidgetParams {
   // Core required parameters
   appCode: string;
   assets: string[];
+  provider?: EthereumProvider;
 
   // Module configuration
   modules: {
@@ -11,7 +12,6 @@ export interface WoopWidgetParams {
   };
 
   // Network configuration
-  provider?: any; // will later extend this to EIP-1193
   networks?: {
     mainnet?: boolean;
     sepolia?: boolean;
@@ -36,18 +36,9 @@ export interface EthereumProvider {
   request<T = any>(args: JsonRpcRequest): Promise<T>;
   on?(event: string, callback: (...args: any[]) => void): void;
   removeListener?(event: string, callback: (...args: any[]) => void): void;
-  isMetaMask?: boolean; // Optional: for common wallet detection
+  isMetaMask?: boolean;
   isCoinbaseWallet?: boolean;
   isBraveWallet?: boolean;
   isFrame?: boolean;
-  [key: string]: any; // Fallback for other props
-}
-
-export interface EIP6963ProviderDetail {
-  info: {
-    uuid: string;
-    name: string;
-    icon: string; // URL or base64
-  };
-  provider: EthereumProvider;
+  [key: string]: any;
 }

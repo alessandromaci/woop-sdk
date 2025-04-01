@@ -1,73 +1,59 @@
-import type { WoopWidgetParams, EIP6963ProviderDetail } from "./types";
+import type { WoopWidgetParams } from "./types";
 
 export async function createWoopWidget(
   container: HTMLElement,
   params: WoopWidgetParams
 ) {
-  let address = "";
-  const providers: EIP6963ProviderDetail[] = [];
+  // Build base iframe URL
+  const baseUrl = "https://app.woopwidget.com/widget";
+  const query = new URLSearchParams({
+    appCode: params.appCode,
+    assets: params.assets.join(","),
+    theme: params.theme || "light",
+    modules: JSON.stringify(params.modules),
+    networks: JSON.stringify(params.networks || {}),
+    buttonColor: params.buttonColor || "",
+    logo: params.logo || "",
+  }).toString();
 
-  const handleProviderAnnounce = (event: Event) => {
-    const e = event as CustomEvent<EIP6963ProviderDetail>;
-    providers.push(e.detail);
-  };
+  const iframeUrl = `${baseUrl}?${query}`;
 
-  window.addEventListener("eip6963:announceProvider", handleProviderAnnounce);
+  // Create the iframe
+  const iframe = document.createElement("iframe");
+  iframe.src = iframeUrl;
+  iframe.width = "100%";
+  iframe.height = "600";
+  iframe.style.border = "none";
+  iframe.id = "woop-widget-frame";
 
-  // Request providers to announce themselves
-  window.dispatchEvent(new Event("eip6963:requestProvider"));
+  // Clear and append
+  container.innerHTML = "";
+  container.appendChild(iframe);
 
-  // Wait briefly to collect providers
-  await new Promise((res) => setTimeout(res, 300));
+  // Wait for iframe to load
+  iframe.addEventListener("load", async () => {
+    if (!params.provider) return;
 
-  window.removeEventListener(
-    "eip6963:announceProvider",
-    handleProviderAnnounce
-  );
-
-  // Choose provider: either passed in, or first EIP-6963 provider, or fallback to window.ethereum
-  const effectiveProvider =
-    params.provider || providers[0]?.provider || (window as any).ethereum;
-
-  if (effectiveProvider) {
     try {
-      const accounts = await effectiveProvider.request({
+      const accounts = await params.provider.request({
         method: "eth_requestAccounts",
       });
-      address = (accounts as string[])[0] ?? "";
+      const address = accounts?.[0];
 
-      address = accounts?.[0] ?? "";
+      if (address) {
+        iframe.contentWindow?.postMessage(
+          {
+            type: "WOOP_CONNECT",
+            payload: {
+              address,
+              provider: params.provider,
+            },
+          },
+          "https://app.woopwidget.com"
+        );
+      }
     } catch (err) {
-      console.error("Failed to get wallet address:", err);
+      console.error("Failed to fetch wallet address:", err);
     }
-  }
-
-  container.innerHTML = `
-    <div style="padding: 20px; border: 1px solid #ccc;">
-      <strong>Woop Widget</strong><br />
-      
-      <!-- Core Parameters -->
-      App Code: ${params.appCode}<br />
-      Assets: ${params.assets.join(", ")}<br />
-      
-      <!-- Module Configuration -->
-      Modules: ${JSON.stringify(params.modules)}<br />
-      
-      <!-- Network Configuration -->
-            Provider: ${
-              params.provider
-                ? "custom"
-                : providers[0]?.info.name || "window.ethereum"
-            }<br />
-      Networks: ${JSON.stringify(params.networks)}<br />
-      
-      <!-- UI/Theme Configuration -->
-      Theme: ${params.theme}<br />
-      Button Color: ${params.buttonColor}<br />
-      Logo: ${params.logo}<br />
-      
-      <!-- Wallet Status -->
-      Wallet: ${address || "No wallet connected"}<br />
-    </div>
-  `;
+  });
 }

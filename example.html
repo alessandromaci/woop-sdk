@@ -12,8 +12,9 @@
       createWoopWidget(document.getElementById("woop-widget"), {
         appCode: "TEST-WALLET",
         assets: ["USDC", "ETH", "WBTC"],
+        provider: window.ethereum,
 
-        // Modules flags
+        // Modules configuration
         modules: {
           enableReceive: true,
           enableInvest: true,
@@ -21,7 +22,6 @@
         },
 
         // Network configuration
-        provider: window.ethereum,
         networks: {
           mainnet: true,
           sepolia: false,
