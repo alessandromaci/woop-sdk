@@ -1,6 +1,7 @@
 {
   "name": "woop-sdk",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "type": "module",
   "description": "Woop Widget SDK",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -26,7 +27,7 @@
   "devDependencies": {
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
-    "typescript": "^5.8.2",
+    "typescript": "^5.0.0",
     "vite": "^6.2.3"
   },
   "dependencies": {
