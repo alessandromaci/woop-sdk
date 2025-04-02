@@ -15,7 +15,6 @@ export interface WoopWidgetParams {
   networks?: {
     mainnet?: boolean;
     sepolia?: boolean;
-    polygon?: boolean;
     optimism?: boolean;
     arbitrum?: boolean;
     base?: boolean;

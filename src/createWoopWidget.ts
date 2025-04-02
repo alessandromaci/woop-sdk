@@ -4,6 +4,44 @@ export async function createWoopWidget(
   container: HTMLElement,
   params: WoopWidgetParams
 ) {
+  // Function to convert image URL to data URL
+  const convertImageToDataUrl = async (imageUrl: string): Promise<string> => {
+    try {
+      // Create a canvas element
+      const img = new Image();
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      // Create a promise to handle image loading
+      const imageLoadPromise = new Promise((resolve, reject) => {
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error("Failed to load image"));
+        img.crossOrigin = "anonymous"; // Enable CORS
+        img.src = imageUrl;
+      });
+
+      // Wait for image to load
+      await imageLoadPromise;
+
+      // Set canvas size to match image
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      // Draw image to canvas and convert to data URL
+      ctx?.drawImage(img, 0, 0);
+      return canvas.toDataURL("image/png");
+    } catch (error) {
+      console.warn("Failed to convert image to data URL:", error);
+      return ""; // Return empty string on error
+    }
+  };
+
+  // Convert logo to data URL if it exists
+  let logoDataUrl = "";
+  if (params.logo) {
+    logoDataUrl = await convertImageToDataUrl(params.logo);
+  }
+
   // Build base iframe URL
   const baseUrl = "http://localhost:3000/widgetext"; // In development
   const query = new URLSearchParams({
@@ -13,7 +51,7 @@ export async function createWoopWidget(
     networks: JSON.stringify(params.networks || {}),
     theme: params.theme || "light",
     buttonColor: params.buttonColor || "#4B6BFB",
-    logo: params.logo || "",
+    logo: logoDataUrl || "", // Use the data URL instead of direct URL
   }).toString();
 
   const iframeUrl = `${baseUrl}?${query}`;
@@ -22,11 +60,14 @@ export async function createWoopWidget(
   const iframe = document.createElement("iframe");
   iframe.src = iframeUrl;
   iframe.style.width = "100%";
-  iframe.style.height = "600px"; // Increased height for better UX
-  iframe.style.border = "1px solid #E5E7EB"; // Subtle border
-  iframe.style.borderRadius = "16px"; // Rounded corners
+  iframe.style.maxWidth = "480px"; // More compact width
+  iframe.style.height = "680px"; // Fixed height that works well for most cases
+  iframe.style.border = "1px solid #E5E7EB";
+  iframe.style.borderRadius = "16px";
   iframe.style.boxShadow =
-    "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"; // Subtle shadow
+    "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)";
+  iframe.style.margin = "0 auto"; // Center the iframe
+  iframe.style.display = "block"; // Ensure proper margin auto behavior
   iframe.id = "woop-widget-frame";
 
   // Clear container and append iframe
