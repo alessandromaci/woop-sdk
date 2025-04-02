@@ -60,14 +60,14 @@ export async function createWoopWidget(
   const iframe = document.createElement("iframe");
   iframe.src = iframeUrl;
   iframe.style.width = "100%";
-  iframe.style.maxWidth = "480px"; // More compact width
-  iframe.style.height = "680px"; // Fixed height that works well for most cases
-  iframe.style.border = "1px solid #E5E7EB";
+  iframe.style.height = "490px";
+  iframe.style.maxWidth = "380px";
+  iframe.style.border = "none";
   iframe.style.borderRadius = "16px";
-  iframe.style.boxShadow =
-    "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)";
-  iframe.style.margin = "0 auto"; // Center the iframe
-  iframe.style.display = "block"; // Ensure proper margin auto behavior
+  iframe.style.margin = "0";
+  iframe.style.padding = "0";
+  iframe.style.display = "block";
+  iframe.style.overflow = "hidden";
   iframe.id = "woop-widget-frame";
 
   // Clear container and append iframe
