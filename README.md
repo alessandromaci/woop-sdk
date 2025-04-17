@@ -178,7 +178,9 @@ Common issues and solutions:
 For support, please contact:
 
 - Email: hello@woop.ink
-- Telegram: [Join our Telegram](https://t.me/woop_pay)
+- Telegram: Join our [Telegram community](https://t.me/woop_pay)
+- Website: https://www.woopwidget.com/
+
 
 ## License
 

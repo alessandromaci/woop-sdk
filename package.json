@@ -1,6 +1,6 @@
 {
-  "name": "@woop/sdk",
-  "version": "1.0.0",
+  "name": "@woopwidget/sdk",
+  "version": "0.0.3",
   "description": "Woop Widget SDK for easy integration with various wallets",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

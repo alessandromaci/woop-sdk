@@ -46,46 +46,224 @@
         background: linear-gradient(145deg, #ffffff, #f6f6f6);  // Subtle gradient
         */
       }
+
+      /* Wallet button styles */
+      .wallet-button {
+        display: block;
+        margin: 20px auto;
+        padding: 10px 20px;
+        background-color: #4b6bfb;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+      }
+
+      .wallet-button:hover {
+        background-color: #3b5beb;
+      }
+
+      .wallet-button:disabled {
+        background-color: #94a3b8;
+        cursor: not-allowed;
+      }
+
+      .wallet-info {
+        text-align: center;
+        margin: 20px;
+        padding: 10px;
+        background-color: #f1f5f9;
+        border-radius: 8px;
+      }
+
+      /* Wallet selector styles */
+      .wallet-selector {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+      }
+
+      .wallet-selector.active {
+        display: block;
+      }
+
+      .wallet-option {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+
+      .wallet-option:hover {
+        background-color: #f8fafc;
+      }
+
+      .wallet-option img {
+        width: 32px;
+        height: 32px;
+        margin-right: 10px;
+      }
     </style>
   </head>
   <body>
+    <div id="wallet-status" class="wallet-info"></div>
     <div id="woop-widget"></div>
+    <button id="connect-wallet" class="wallet-button">Connect Wallet</button>
+
+    <!-- Wallet selector modal -->
+    <div id="wallet-selector" class="wallet-selector">
+      <h3>Select a Wallet</h3>
+      <div id="wallet-options"></div>
+    </div>
+
     <script type="module">
       import { createWoopWidget } from "./dist/createWoopWidget.js";
 
-      // Example: How a wallet (like MetaMask) would integrate the widget
-      createWoopWidget(document.getElementById("woop-widget"), {
-        // Required: App identification
-        appCode: "TEST-WALLET",
+      // Store discovered providers
+      const providers = new Map();
 
-        // Required: Pass the wallet's provider
-        provider: window.ethereum, // In MetaMask this would be their injected provider
+      // Function to handle provider announcements
+      function handleProviderAnnouncement(event) {
+        const { info, provider } = event.detail;
+        providers.set(info.uuid, { info, provider });
+        updateWalletOptions();
+      }
 
-        // Required: Supported assets
-        assets: ["USDC", "ETH", "WBTC"],
+      // Function to update wallet options UI
+      function updateWalletOptions() {
+        const walletOptions = document.getElementById("wallet-options");
+        walletOptions.innerHTML = "";
 
-        // Optional: Enable/disable specific modules
-        modules: {
-          enableReceive: true,
-          enableInvest: true,
-          enableNFTs: true,
-        },
+        providers.forEach(({ info }, uuid) => {
+          const option = document.createElement("div");
+          option.className = "wallet-option";
+          option.innerHTML = `
+            <img src="${info.icon}" alt="${info.name}" />
+            <span>${info.name}</span>
+          `;
+          option.onclick = () => connectWallet(uuid);
+          walletOptions.appendChild(option);
+        });
+      }
 
-        // Optional: Supported networks
-        networks: {
-          mainnet: true,
-          sepolia: false,
-          polygon: false,
-          optimism: true,
-          arbitrum: true,
-          base: true,
-        },
+      // Function to show wallet selector
+      function showWalletSelector() {
+        document.getElementById("wallet-selector").classList.add("active");
+      }
 
-        // Optional: UI customization
-        theme: "light",
-        buttonColor: "#4B6BFB",
-        logo: "https://your-logo-url.com/logo.png",
-      });
+      // Function to hide wallet selector
+      function hideWalletSelector() {
+        document.getElementById("wallet-selector").classList.remove("active");
+      }
+
+      // Function to connect to selected wallet
+      async function connectWallet(uuid) {
+        try {
+          const { provider } = providers.get(uuid);
+          const info = providers.get(uuid).info;
+
+          // Request account access
+          const accounts = await provider.request({
+            method: "eth_requestAccounts",
+          });
+
+          // Get chain ID
+          const chainId = await provider.request({
+            method: "eth_chainId",
+          });
+
+          // Update UI
+          const connectButton = document.getElementById("connect-wallet");
+          const walletStatus = document.getElementById("wallet-status");
+
+          connectButton.textContent = "Connected";
+          connectButton.disabled = true;
+          walletStatus.textContent = `Connected: ${accounts[0].slice(
+            0,
+            6
+          )}...${accounts[0].slice(-4)}`;
+
+          // Hide wallet selector
+          hideWalletSelector();
+
+          // Create widget with selected provider
+          createWoopWidget(document.getElementById("woop-widget"), {
+            appCode: "TEST-WALLET",
+            provider: provider,
+            assets: ["USDC", "ETH", "WBTC"],
+            modules: {
+              enableReceive: true,
+              enableInvest: true,
+              enableNFTs: true,
+            },
+            networks: {
+              mainnet: true,
+              sepolia: false,
+              optimism: true,
+              arbitrum: false,
+              base: true,
+            },
+            theme: "light",
+            buttonColor: "#4B6BFB",
+            logo: "",
+          });
+
+          // Listen for account changes
+          provider.on("accountsChanged", (accounts) => {
+            if (accounts.length === 0) {
+              connectButton.textContent = "Connect Wallet";
+              connectButton.disabled = false;
+              walletStatus.textContent = "Wallet disconnected";
+            } else {
+              walletStatus.textContent = `Connected: ${accounts[0].slice(
+                0,
+                6
+              )}...${accounts[0].slice(-4)}`;
+            }
+          });
+
+          // Listen for chain changes
+          provider.on("chainChanged", (chainId) => {
+            console.log("Chain changed to:", chainId);
+          });
+        } catch (error) {
+          console.error("Failed to connect wallet:", error);
+          document.getElementById("wallet-status").textContent =
+            "Failed to connect wallet. Please try again.";
+        }
+      }
+
+      // Initialize wallet discovery
+      function initializeWalletDiscovery() {
+        // Listen for provider announcements
+        window.addEventListener(
+          "eip6963:announceProvider",
+          handleProviderAnnouncement
+        );
+
+        // Request providers
+        window.dispatchEvent(new Event("eip6963:requestProvider"));
+
+        // Add click handler to connect button
+        document
+          .getElementById("connect-wallet")
+          .addEventListener("click", showWalletSelector);
+      }
+
+      // Start wallet discovery
+      initializeWalletDiscovery();
     </script>
   </body>
 </html>
