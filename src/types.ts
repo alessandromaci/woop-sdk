@@ -1,17 +1,21 @@
-export interface WoopWidgetParams {
-  // Core required parameters
+export interface WidgetConfig {
+  /** Your unique application identifier */
   appCode: string;
-  assets: string[];
-  provider?: EthereumProvider;
 
-  // Module configuration
-  modules: {
-    enableReceive: boolean;
-    enableInvest: boolean;
-    enableNFTs: boolean;
+  /** EIP-1193 compatible wallet provider */
+  provider: any;
+
+  /** List of supported assets */
+  assets: string[];
+
+  /** Enable/disable specific modules */
+  modules?: {
+    enableReceive?: boolean;
+    enableInvest?: boolean;
+    enableNFTs?: boolean;
   };
 
-  // Network configuration
+  /** Configure supported networks */
   networks?: {
     mainnet?: boolean;
     sepolia?: boolean;
@@ -20,24 +24,31 @@ export interface WoopWidgetParams {
     base?: boolean;
   };
 
-  // UI/Theme configuration
-  theme?: "light" | "dark" | "system";
+  /** UI theme */
+  theme?: "light" | "dark";
+
+  /** Custom button color */
   buttonColor?: string;
+
+  /** Custom logo URL */
   logo?: string;
 }
 
-export interface JsonRpcRequest {
-  method: string;
-  params?: unknown[];
+export interface WidgetInstance {
+  /** Destroy the widget instance */
+  destroy: () => void;
+
+  /** Update widget configuration */
+  updateConfig: (config: Partial<WidgetConfig>) => void;
 }
 
-export interface EthereumProvider {
-  request<T = any>(args: JsonRpcRequest): Promise<T>;
-  on?(event: string, callback: (...args: any[]) => void): void;
-  removeListener?(event: string, callback: (...args: any[]) => void): void;
-  isMetaMask?: boolean;
-  isCoinbaseWallet?: boolean;
-  isBraveWallet?: boolean;
-  isFrame?: boolean;
-  [key: string]: any;
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
 }
+
+export function createWoopWidget(
+  container: HTMLElement,
+  config: WidgetConfig
+): WidgetInstance;
