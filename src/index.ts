@@ -1,2 +1,4 @@
-export { createWoopWidget } from "./createWoopWidget";
-export type { WoopWidgetParams } from "./types";
+import { createWoopWidget } from "./createWoopWidget";
+import { WidgetConfig, WidgetInstance } from "./types";
+
+export { createWoopWidget, WidgetConfig, WidgetInstance };

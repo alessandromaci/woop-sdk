@@ -47,8 +47,3 @@ declare global {
     ethereum?: any;
   }
 }
-
-export function createWoopWidget(
-  container: HTMLElement,
-  config: WidgetConfig
-): WidgetInstance;
