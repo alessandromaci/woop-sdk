@@ -177,9 +177,8 @@ Common issues and solutions:
 
 For support, please contact:
 
-- Email: support@woop.com
-- Discord: [Join our Discord](https://discord.gg/woop)
-- Documentation: [Woop Documentation](https://docs.woop.com)
+- Email: hello@woop.ink
+- Telegram: [Join our Telegram](https://t.me/woop_pay)
 
 ## License
 
