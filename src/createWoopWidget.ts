@@ -60,14 +60,13 @@ export async function createWoopWidget(
   const iframe = document.createElement("iframe");
   iframe.src = iframeUrl;
   iframe.style.width = "100%";
-  iframe.style.height = "490px";
+  iframe.style.height = "100%";
   iframe.style.maxWidth = "380px";
   iframe.style.border = "none";
   iframe.style.borderRadius = "16px";
   iframe.style.margin = "0";
   iframe.style.padding = "0";
   iframe.style.display = "block";
-  iframe.style.overflow = "hidden";
   iframe.id = "woop-widget-frame";
 
   // Clear container and append iframe

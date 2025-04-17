@@ -2,40 +2,54 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Woop Widget Test</title>
+    <title>Woop Widget</title>
     <style>
-      body {
-        margin: 0;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        background: #f5f5f5;
-      }
-      .widget-wrapper {
-        width: 100%;
-        max-width: 380px;
-        height: 500px;
-        border-radius: 16px;
-        overflow: hidden;
-        background: #0f1217;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-          0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      }
+      /* Basic styles */
       #woop-widget {
+        /* Size configuration */
         width: 100%;
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        display: block;
+        height: 550px;
+        max-width: 380px;
+        min-height: 400px;
+
+        /* Border styling options */
+        border-radius: 16px;
+        /* Alternative border styles:
+        border-radius: 8px;  // Less rounded corners
+        border-radius: 24px; // More rounded corners
+        border: 1px solid #e5e7eb; // Add border
+        */
+
+        /* Shadow options */
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        /* Alternative shadow styles:
+        box-shadow: none;  // No shadow
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); // Larger shadow
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); // Even larger shadow
+        */
+
+        /* Position and spacing */
+        margin: 0 auto; /* Center the widget */
+        /* Alternative positioning:
+        margin: 20px;  // Add space around
+        float: right;  // Align to right
+        position: fixed;  // Fix position
+        right: 20px;
+        bottom: 20px;
+        */
+
+        /* Background options */
+        background: transparent;
+        /* Alternative backgrounds:
+        background: #f8fafc;  // Light gray background
+        backdrop-filter: blur(8px);  // Frosted glass effect
+        background: linear-gradient(145deg, #ffffff, #f6f6f6);  // Subtle gradient
+        */
       }
     </style>
   </head>
   <body>
-    <div class="widget-wrapper">
-      <div id="woop-widget"></div>
-    </div>
+    <div id="woop-widget"></div>
     <script type="module">
       import { createWoopWidget } from "./dist/createWoopWidget.js";
 
