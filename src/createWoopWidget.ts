@@ -28,7 +28,7 @@ export async function createWoopWidget(
   }
 
   // Build base iframe URL
-  const baseUrl = "http://localhost:3000/widgetext"; // In development
+  const baseUrl = "http://app.woopwidget.com/widgetext";
   const query = new URLSearchParams({
     appCode: config.appCode,
     assets: config.assets.join(","),
