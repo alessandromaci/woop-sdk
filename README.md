@@ -5,15 +5,15 @@ The Woop SDK allows you to easily integrate the Woop widget into your applicatio
 ## Installation
 
 ```bash
-npm install @woop/sdk
+npm install @woopwidget/sdk
 # or
-yarn add @woop/sdk
+yarn add @woopwidget/sdk
 ```
 
 ## Quick Start
 
 ```javascript
-import { createWoopWidget } from "@woop/sdk";
+import { createWoopWidget } from "@woopwidget/sdk";
 
 // Initialize the widget
 createWoopWidget(document.getElementById("woop-widget"), {
@@ -42,22 +42,22 @@ createWoopWidget(document.getElementById("woop-widget"), {
 
 ```jsx
 import { useEffect } from "react";
-import { createWoopWidget } from "@woop/sdk";
-import { useAccount, useProvider } from "wagmi";
+import { createWoopWidget } from "@woopwidget/sdk";
+import { useAccount, usePublicClient } from "wagmi";
 
 function WidgetComponent() {
   const { isConnected } = useAccount();
-  const provider = useProvider();
+  const publicClient = usePublicClient();
 
   useEffect(() => {
-    if (isConnected && provider) {
+    if (isConnected && publicClient) {
       createWoopWidget(document.getElementById("woop-widget"), {
         appCode: "YOUR-APP-CODE",
-        provider: provider,
+        provider: publicClient,
         assets: ["USDC", "ETH", "WBTC"],
       });
     }
-  }, [isConnected, provider]);
+  }, [isConnected, publicClient]);
 
   return <div id="woop-widget" />;
 }
@@ -180,7 +180,6 @@ For support, please contact:
 - Email: hello@woop.ink
 - Telegram: Join our [Telegram community](https://t.me/woop_pay)
 - Website: https://www.woopwidget.com/
-
 
 ## License
 
