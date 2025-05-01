@@ -10,17 +10,48 @@ npm install @woopwidget/sdk
 yarn add @woopwidget/sdk
 ```
 
+## Prerequisites
+
+Before integrating the Woop widget, ensure you have:
+
+1. A web3 wallet provider (like MetaMask, WalletConnect, etc.)
+2. Basic understanding of:
+   - Wallet connections
+   - Chain IDs and networks
+   - JSON-RPC requests
+   - Iframe communication
+
 ## Integration Guide
 
-### Basic Integration
+### Basic Integration (Plain JavaScript)
 
-The widget requires three key pieces of information:
+Here's a simple implementation that works with any wallet provider:
 
-- A connected wallet address
-- The current chain ID
-- A way to make JSON-RPC requests
+```javascript
+// Initialize the widget
+const widget = new WoopWidget("woop-widget", {
+  appCode: "YOUR-APP-CODE",
+  getAddress: () => window.ethereum.selectedAddress, // Get current wallet address
+  getChainId: () => window.ethereum.chainId, // Get current chain ID
+  makeRpcRequest: async (method, params) => {
+    return await window.ethereum.request({ method, params });
+  },
+});
 
-Here's a basic implementation that works with any wallet provider:
+// Example usage
+document.addEventListener("DOMContentLoaded", () => {
+  // Check if wallet is connected
+  if (window.ethereum && window.ethereum.isConnected()) {
+    widget.initialize();
+  } else {
+    console.log("Please connect your wallet");
+  }
+});
+```
+
+### TypeScript Integration
+
+For TypeScript users, here's a more type-safe implementation:
 
 ```typescript
 class WoopWidget {
@@ -143,11 +174,88 @@ const widget = new WoopWidget("woop-widget", {
 });
 ```
 
-### React + Wagmi Integration (Optional)
+### React + Wagmi Integration
 
 If you're building a web3 application (rather than a wallet), you might want to use Wagmi for wallet connections. Here's how:
 
-[Previous Wagmi example...]
+```typescript
+import React, { useEffect, useRef } from "react";
+import { createWoopWidget } from "@woopwidget/sdk";
+import { usePublicClient, useAccount } from "wagmi";
+
+const WoopWidget: React.FC = () => {
+  const provider = usePublicClient();
+  const { isConnected, address, chainId } = useAccount();
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+
+  // Function to send wallet info
+  const sendWalletInfo = () => {
+    const iframe = iframeRef.current;
+    if (iframe?.contentWindow && address && chainId) {
+      iframe.contentWindow.postMessage(
+        {
+          type: "WOOP_CONNECT",
+          payload: {
+            address,
+            chainId:
+              typeof chainId === "number"
+                ? `0x${chainId.toString(16)}`
+                : chainId,
+            provider: { type: "PROVIDER_PROXY" },
+          },
+        },
+        "*"
+      );
+    }
+  };
+
+  useEffect(() => {
+    const element = document.getElementById("woop-widget");
+    if (element && isConnected && provider && address && chainId) {
+      try {
+        // Create widget first
+        createWoopWidget(element, {
+          appCode: "YOUR-APP-CODE",
+          provider: provider,
+          assets: ["USDC", "ETH", "WBTC"],
+          modules: {
+            enableReceive: true,
+            enableInvest: true,
+            enableNFTs: true,
+          },
+          networks: {
+            mainnet: true,
+            sepolia: true,
+          },
+          theme: "light",
+          buttonColor: "#000000",
+        });
+
+        // Store reference to iframe
+        iframeRef.current = element.querySelector("iframe");
+
+        // Send initial wallet info
+        sendWalletInfo();
+
+        // Retry a few times in case the first attempt fails
+        [500, 1000].forEach((delay) => {
+          setTimeout(sendWalletInfo, delay);
+        });
+      } catch (error) {
+        console.error("Error initializing WoopWidget:", error);
+      }
+    }
+  }, [provider, isConnected, address, chainId]);
+
+  if (!isConnected || !address) {
+    return <div>Please connect your wallet to use the widget</div>;
+  }
+
+  return <div id="woop-widget" />;
+};
+
+export default WoopWidget;
+```
 
 ### Configuration Options
 
