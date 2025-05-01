@@ -28,7 +28,8 @@ export async function createWoopWidget(
   }
 
   // Build base iframe URL
-  const baseUrl = "http://app.woopwidget.com/widgetext";
+  const baseUrl =
+    "https://woop-git-handlewalletconnectionwidget-woop-pay.vercel.app/widgetext";
   const query = new URLSearchParams({
     appCode: config.appCode,
     assets: config.assets.join(","),

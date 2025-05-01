@@ -19,22 +19,59 @@ import { createWoopWidget } from "@woopwidget/sdk";
 createWoopWidget(document.getElementById("woop-widget"), {
   appCode: "YOUR-APP-CODE",
   provider: window.ethereum, // Your wallet provider
-  assets: ["USDC", "ETH", "WBTC"],
+  assets: ["USDC", "ETH", "WBTC", "USDT", "cbBTC"],
+  modules: {
+    enableReceive: true,
+    enableInvest: true,
+    enableNFTs: true,
+  },
+  networks: {
+    mainnet: true,
+    sepolia: true,
+    optimism: true,
+    arbitrum: true,
+    base: true,
+  },
+  theme: "light", // or "dark", "system"
+  buttonColor: "#007BFF",
+  logo: "https://your-logo-url.com/logo.png", // Optional
 });
 ```
 
 ## Configuration Options
 
-| Option      | Type     | Required | Description                         |
-| ----------- | -------- | -------- | ----------------------------------- |
-| appCode     | string   | Yes      | Your unique application identifier  |
-| provider    | object   | Yes      | EIP-1193 compatible wallet provider |
-| assets      | string[] | Yes      | List of supported assets            |
-| modules     | object   | No       | Enable/disable specific modules     |
-| networks    | object   | No       | Configure supported networks        |
-| theme       | string   | No       | UI theme ('light' or 'dark')        |
-| buttonColor | string   | No       | Custom button color                 |
-| logo        | string   | No       | Custom logo URL                     |
+| Option      | Type     | Required | Description                              | Default                                                                        |
+| ----------- | -------- | -------- | ---------------------------------------- | ------------------------------------------------------------------------------ |
+| appCode     | string   | Yes      | Your unique application identifier       | -                                                                              |
+| provider    | object   | Yes      | EIP-1193 compatible wallet provider      | -                                                                              |
+| assets      | string[] | Yes      | Supported assets (USDC, ETH, WBTC, etc.) | -                                                                              |
+| modules     | object   | No       | Feature toggles for widget modules       | `{ enableReceive: true, enableInvest: true, enableNFTs: true }`                |
+| networks    | object   | No       | Supported networks configuration         | `{ mainnet: true, sepolia: true, optimism: true, arbitrum: true, base: true }` |
+| theme       | string   | No       | UI theme ('light', 'dark', 'system')     | "light"                                                                        |
+| buttonColor | string   | No       | Custom button color (hex)                | "#007BFF"                                                                      |
+| logo        | string   | No       | Custom logo URL                          | -                                                                              |
+
+### Modules Configuration
+
+```javascript
+{
+  enableReceive: boolean, // Enable receive functionality
+  enableInvest: boolean,  // Enable investment features
+  enableNFTs: boolean     // Enable NFT features
+}
+```
+
+### Networks Configuration
+
+```javascript
+{
+  mainnet: boolean,  // Ethereum mainnet
+  sepolia: boolean,  // Sepolia testnet
+  optimism: boolean, // Optimism
+  arbitrum: boolean, // Arbitrum
+  base: boolean      // Base
+}
+```
 
 ## Examples
 
