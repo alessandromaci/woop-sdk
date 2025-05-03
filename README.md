@@ -348,7 +348,7 @@ Common issues and solutions:
 
 ## Support
 
-For support, please contact:
+For support and APP_CODE request, please contact:
 
 - Email: hello@woop.ink
 - Website: https://www.woopwidget.com/
