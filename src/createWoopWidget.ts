@@ -1,12 +1,36 @@
 import { WidgetConfig, WidgetInstance } from "./types";
-import { validateAppCode } from "./validateAppCode";
+
+// Shared variable for the API base URL
+const WOOP_API_BASE_URL =
+  "https://woop-git-handlewalletconnectionwidget-woop-pay.vercel.app";
 
 export async function createWoopWidget(
   container: HTMLElement,
   config: WidgetConfig
 ): Promise<WidgetInstance> {
-  // Validate appCode first
-  const isValid = await validateAppCode(config);
+  // Validate appCode via API
+  const validateAppCodeViaApi = async (appCode: string): Promise<boolean> => {
+    try {
+      if (!WOOP_API_BASE_URL) {
+        throw new Error(
+          "WOOP_API_BASE_URL is not set. Please call setWoopApiBaseUrl."
+        );
+      }
+      const res = await fetch(
+        `${WOOP_API_BASE_URL}/api/app-codes/validate?code=${encodeURIComponent(
+          appCode
+        )}`
+      );
+      if (!res.ok) return false;
+      const json = await res.json();
+      return json.valid === true;
+    } catch (e) {
+      console.error("App code validation failed:", e);
+      return false;
+    }
+  };
+
+  const isValid = await validateAppCodeViaApi(config.appCode);
   if (!isValid) {
     throw new Error("Invalid appCode. Please register your appCode first.");
   }
@@ -35,8 +59,7 @@ export async function createWoopWidget(
   }
 
   // Build base iframe URL
-  const baseUrl =
-    "https://woop-git-handlewalletconnectionwidget-woop-pay.vercel.app/widgetext";
+  const baseUrl = `${WOOP_API_BASE_URL}/widgetext`;
   const query = new URLSearchParams({
     appCode: config.appCode,
     assets: config.assets.join(","),
