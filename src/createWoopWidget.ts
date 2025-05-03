@@ -1,9 +1,16 @@
 import { WidgetConfig, WidgetInstance } from "./types";
+import { validateAppCode } from "./validateAppCode";
 
 export async function createWoopWidget(
   container: HTMLElement,
   config: WidgetConfig
 ): Promise<WidgetInstance> {
+  // Validate appCode first
+  const isValid = await validateAppCode(config);
+  if (!isValid) {
+    throw new Error("Invalid appCode. Please register your appCode first.");
+  }
+
   // Function to convert image URL to data URL
   const convertImageToDataUrl = async (imageUrl: string): Promise<string> => {
     try {
@@ -99,13 +106,8 @@ export async function createWoopWidget(
 
   return {
     destroy: () => {
-      // Cleanup implementation
       container.removeChild(iframe);
       window.removeEventListener("message", sendWalletInfo);
-    },
-    updateConfig: (newConfig: Partial<WidgetConfig>) => {
-      // Update implementation
-      // You can implement config updates here
     },
   };
 }

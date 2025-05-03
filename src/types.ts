@@ -37,9 +37,6 @@ export interface WidgetConfig {
 export interface WidgetInstance {
   /** Destroy the widget instance */
   destroy: () => void;
-
-  /** Update widget configuration */
-  updateConfig: (config: Partial<WidgetConfig>) => void;
 }
 
 declare global {
