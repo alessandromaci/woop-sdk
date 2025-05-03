@@ -17,7 +17,7 @@ export interface WidgetConfig {
 
   /** Configure supported networks */
   networks?: {
-    mainnet?: boolean;
+    ethereum?: boolean;
     sepolia?: boolean;
     optimism?: boolean;
     arbitrum?: boolean;

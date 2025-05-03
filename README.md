@@ -97,7 +97,7 @@ class WoopWidget {
           enableNFTs: true,
         },
         networks: {
-          mainnet: true,
+          ethereum: true,
           sepolia: true,
         },
         theme: "light",
@@ -224,7 +224,7 @@ const WoopWidget: React.FC = () => {
             enableNFTs: true,
           },
           networks: {
-            mainnet: true,
+            ethereum: true,
             sepolia: true,
           },
           theme: "light",
@@ -291,8 +291,8 @@ interface Provider {
 
 ```typescript
 {
-  mainnet: boolean,  // Ethereum mainnet
-  sepolia: boolean,  // Sepolia testnet
+  ethereum: boolean,  // Ethereum mainnet
+  sepolia: boolean,  // Sepolia Ethereum testnet
   optimism: boolean, // Optimism
   arbitrum: boolean, // Arbitrum
   base: boolean      // Base
@@ -316,7 +316,7 @@ interface Provider {
 
 3. **Chain ID Format**
 
-   - Chain IDs should be sent in hex format (e.g., "0x1" for mainnet)
+   - Chain IDs should be sent in hex format (e.g., "0x1" for Ethereum mainnet)
    - Convert numeric chain IDs to hex before sending
    - Ensure consistent chain ID format across all communications
 
