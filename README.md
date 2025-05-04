@@ -23,160 +23,83 @@ Before integrating the Woop widget, ensure you have:
 
 ## Integration Guide
 
+### ⚡️ Important: Async Initialization & App Code Validation
+
+- `createWoopWidget` is now **async** and must be awaited.
+- The widget validates your `appCode` via an API call before rendering. If validation fails, the widget will not be created.
+- Always check for the iframe after awaiting widget creation before sending wallet info.
+
 ### Basic Integration (Plain JavaScript)
 
-Here's a simple implementation that works with any wallet provider:
-
 ```javascript
-// Initialize the widget
-const widget = new WoopWidget("woop-widget", {
-  appCode: "YOUR-APP-CODE",
-  getAddress: () => window.ethereum.selectedAddress, // Get current wallet address
-  getChainId: () => window.ethereum.chainId, // Get current chain ID
-  makeRpcRequest: async (method, params) => {
-    return await window.ethereum.request({ method, params });
-  },
-});
-
-// Example usage
-document.addEventListener("DOMContentLoaded", () => {
-  // Check if wallet is connected
-  if (window.ethereum && window.ethereum.isConnected()) {
-    widget.initialize();
-  } else {
-    console.log("Please connect your wallet");
-  }
-});
-```
-
-### TypeScript Integration
-
-For TypeScript users, here's a more type-safe implementation:
-
-```typescript
-class WoopWidget {
-  private iframeRef: HTMLIFrameElement | null = null;
-  private element: HTMLElement;
-
-  constructor(
-    elementId: string,
-    config: {
-      appCode: string;
-      getAddress: () => string;
-      getChainId: () => string | number;
-      makeRpcRequest: (method: string, params?: any) => Promise<any>;
-    }
-  ) {
-    this.element = document.getElementById(elementId)!;
-    this.initialize(config);
-  }
-
-  private initialize(config: any) {
+(async () => {
+  const element = document.getElementById("woop-widget");
+  if (element && window.ethereum) {
     try {
-      // Create a provider that matches the expected interface
-      const provider = {
-        request: async ({
-          method,
-          params,
-        }: {
-          method: string;
-          params?: any;
-        }) => {
-          return config.makeRpcRequest(method, params);
-        },
-      };
-
-      // Initialize the widget
-      createWoopWidget(this.element, {
-        appCode: config.appCode,
-        provider,
+      await createWoopWidget(element, {
+        appCode: "YOUR-APP-CODE",
+        provider: window.ethereum,
         assets: ["USDC", "ETH", "WBTC"],
-        modules: {
-          enableReceive: true,
-          enableInvest: true,
-          enableNFTs: true,
-        },
-        networks: {
-          ethereum: true,
-          sepolia: true,
-        },
+        modules: { enableReceive: true, enableInvest: true, enableNFTs: true },
+        networks: { ethereum: true, sepolia: true },
         theme: "light",
         buttonColor: "#000000",
       });
-
-      // Store iframe reference
-      this.iframeRef = this.element.querySelector("iframe");
-
-      // Setup communication
-      this.setupCommunication(config);
-    } catch (error) {
-      console.error("Error initializing WoopWidget:", error);
-    }
-  }
-
-  private setupCommunication(config: any) {
-    // Send initial connection info
-    const sendWalletInfo = () => {
-      if (this.iframeRef?.contentWindow) {
-        const address = config.getAddress();
-        const chainId = config.getChainId();
-
-        // Convert chainId to hex if it's a number
-        const formattedChainId =
-          typeof chainId === "number" ? `0x${chainId.toString(16)}` : chainId;
-
-        this.iframeRef.contentWindow.postMessage(
+      // Now the iframe is present, you can send wallet info
+      const iframe = element.querySelector("iframe");
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.postMessage(
           {
             type: "WOOP_CONNECT",
             payload: {
-              address,
-              chainId: formattedChainId,
+              address: window.ethereum.selectedAddress,
+              chainId: window.ethereum.chainId,
               provider: { type: "PROVIDER_PROXY" },
             },
           },
           "*"
         );
       }
-    };
-
-    // Send on iframe load
-    if (this.iframeRef) {
-      this.iframeRef.addEventListener("load", sendWalletInfo);
+    } catch (error) {
+      console.error("Error initializing WoopWidget:", error);
     }
+  }
+})();
+```
 
-    // Initial send
-    sendWalletInfo();
+### TypeScript Integration
 
-    // Retry to ensure connection
-    [500, 1000].forEach((delay) => {
-      setTimeout(sendWalletInfo, delay);
-    });
-
-    // Example of handling wallet state changes
-    // Replace with your wallet's event system
-    return {
-      onAddressChange: (newAddress: string) => {
-        sendWalletInfo();
-      },
-      onChainChange: (newChainId: string) => {
-        sendWalletInfo();
-      },
-    };
+```typescript
+async function initializeWoopWidget(elementId: string, config: any) {
+  const element = document.getElementById(elementId);
+  if (!element) return;
+  try {
+    await createWoopWidget(element, config);
+    // Now the iframe is present, you can send wallet info
+    const iframe = element.querySelector("iframe");
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage(
+        {
+          type: "WOOP_CONNECT",
+          payload: {
+            address: config.getAddress(),
+            chainId:
+              typeof config.getChainId() === "number"
+                ? `0x${config.getChainId().toString(16)}`
+                : config.getChainId(),
+            provider: { type: "PROVIDER_PROXY" },
+          },
+        },
+        "*"
+      );
+    }
+  } catch (error) {
+    console.error("Error initializing WoopWidget:", error);
   }
 }
-
-// Usage Example
-const widget = new WoopWidget("woop-widget", {
-  appCode: "YOUR-APP-CODE",
-  getAddress: () => wallet.getCurrentAddress(), // Replace with your wallet's method
-  getChainId: () => wallet.getCurrentChainId(), // Replace with your wallet's method
-  makeRpcRequest: (method, params) => wallet.request(method, params), // Replace with your wallet's RPC method
-});
 ```
 
 ### React + Wagmi Integration
-
-If you're building a web3 application (rather than a wallet), you might want to use Wagmi for wallet connections. Here's how:
 
 ```typescript
 import React, { useEffect, useRef } from "react";
@@ -190,7 +113,8 @@ const WoopWidget: React.FC = () => {
 
   // Function to send wallet info
   const sendWalletInfo = () => {
-    const iframe = iframeRef.current;
+    const element = document.getElementById("woop-widget");
+    const iframe = element ? element.querySelector("iframe") : null;
     if (iframe?.contentWindow && address && chainId) {
       iframe.contentWindow.postMessage(
         {
@@ -212,38 +136,32 @@ const WoopWidget: React.FC = () => {
   useEffect(() => {
     const element = document.getElementById("woop-widget");
     if (element && isConnected && provider && address && chainId) {
-      try {
-        // Create widget first
-        createWoopWidget(element, {
-          appCode: "YOUR-APP-CODE",
-          provider: provider,
-          assets: ["USDC", "ETH", "WBTC"],
-          modules: {
-            enableReceive: true,
-            enableInvest: true,
-            enableNFTs: true,
-          },
-          networks: {
-            ethereum: true,
-            sepolia: true,
-          },
-          theme: "light",
-          buttonColor: "#000000",
-        });
-
-        // Store reference to iframe
-        iframeRef.current = element.querySelector("iframe");
-
-        // Send initial wallet info
-        sendWalletInfo();
-
-        // Retry a few times in case the first attempt fails
-        [500, 1000].forEach((delay) => {
-          setTimeout(sendWalletInfo, delay);
-        });
-      } catch (error) {
-        console.error("Error initializing WoopWidget:", error);
-      }
+      (async () => {
+        try {
+          await createWoopWidget(element, {
+            appCode: "YOUR-APP-CODE",
+            provider: provider,
+            assets: ["USDC", "ETH", "WBTC"],
+            modules: {
+              enableReceive: true,
+              enableInvest: true,
+              enableNFTs: true,
+            },
+            networks: {
+              ethereum: true,
+              sepolia: true,
+            },
+            theme: "light",
+            buttonColor: "#000000",
+          });
+          // Store reference to iframe
+          iframeRef.current = element.querySelector("iframe");
+          // Send wallet info
+          sendWalletInfo();
+        } catch (error) {
+          console.error("Error initializing WoopWidget:", error);
+        }
+      })();
     }
   }, [provider, isConnected, address, chainId]);
 
@@ -264,8 +182,8 @@ export default WoopWidget;
 | appCode     | string   | Yes      | Your unique application identifier         | -         |
 | provider    | object   | Yes      | Object implementing the provider interface | -         |
 | assets      | string[] | Yes      | Supported assets (USDC, ETH, WBTC, etc.)   | -         |
-| modules     | object   | No       | Feature toggles for widget modules         | See below |
-| networks    | object   | No       | Supported networks configuration           | See below |
+| modules     | object   | Yes      | Feature toggles for widget modules         | See below |
+| networks    | object   | Yes      | Supported networks configuration           | See below |
 | theme       | string   | No       | UI theme ('light', 'dark')                 | "light"   |
 | buttonColor | string   | No       | Custom button color (hex)                  | "#000000" |
 
@@ -301,29 +219,36 @@ interface Provider {
 
 ## Important Implementation Notes
 
-1. **Wallet Integration Requirements**
+1. **Async Initialization & App Code Validation**
+
+   - `createWoopWidget` is async and must be awaited.
+   - The widget validates your `appCode` via an API call before rendering. If validation fails, the widget will not be created.
+   - Always check for the iframe after awaiting widget creation before sending wallet info.
+
+2. **Wallet Integration Requirements**
 
    - Ability to get current wallet address
    - Ability to get current chain ID
    - Method to make JSON-RPC requests
    - Optional: Way to listen for address/chain changes
 
-2. **Iframe Communication**
+3. **Iframe Communication**
 
    - The widget runs in an iframe and requires message passing
    - Use `postMessage` to send wallet connection info
    - Handle iframe load events to ensure proper initialization
 
-3. **Chain ID Format**
+4. **Chain ID Format**
 
    - Chain IDs should be sent in hex format (e.g., "0x1" for Ethereum mainnet)
    - Convert numeric chain IDs to hex before sending
    - Ensure consistent chain ID format across all communications
 
-4. **Error Handling**
+5. **Error Handling**
    - Implement proper error handling for widget initialization
    - Handle cases where the wallet is not connected
    - Provide user feedback for connection states
+   - If app code validation fails, catch and display the error
 
 ## Troubleshooting
 
@@ -334,6 +259,7 @@ Common issues and solutions:
    - Ensure wallet is connected before initializing widget
    - Verify `WOOP_CONNECT` message is being sent
    - Check iframe communication is working
+   - Make sure you await widget creation before sending wallet info
 
 2. **Address not showing in widget**
 
@@ -342,9 +268,14 @@ Common issues and solutions:
    - Check for any console errors
 
 3. **Network selection issues**
+
    - Ensure networks are properly configured
    - Verify chainId is being properly converted to hex
    - Check network compatibility with selected assets
+
+4. **App code validation errors**
+   - Make sure your app code is valid and registered in the backend
+   - If you see an error about invalid app code, check your API and code registration
 
 ## Support
 
